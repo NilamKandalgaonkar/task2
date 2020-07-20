@@ -2,11 +2,12 @@ var CACHE_NAME = 'task-1';
 
 // A list of local resources we want to be cached
 var urlsToCache = [
-  '/',
-  '/styles/style.css',
-  '/images/pixel.png',
-  '/js/app.js',
-  '/js/serviceWorker/sw.js'
+  '/task2',
+  '/task2'/,
+  '/task2/styles/style.css',
+  '/task2/images/pixel.png',
+  '/task2/js/app.js',
+  '/task2/js/serviceWorker/sw.js'
 ];                  
 
 var serverImageParams = {
