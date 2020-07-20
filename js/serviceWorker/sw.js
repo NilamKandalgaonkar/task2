@@ -31,7 +31,7 @@ this.addEventListener('install', function(event) {
 });
 
 this.addEventListener('fetch', function(event) {
-  console.log("fetch request ---->"+event.request);
+  console.info("fetch request ---->"+event.request);
   event.respondWith(function () {
     if (event.request.url.indexOf("pixel.gif")) { 
       let queryParam = url.split("?");
