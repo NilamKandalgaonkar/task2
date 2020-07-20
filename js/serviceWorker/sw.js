@@ -3,7 +3,7 @@ var CACHE_NAME = 'task-1';
 // A list of local resources we want to be cached
 var urlsToCache = [
   '/task2',
-  '/task2'/,
+  '/task2/',
   '/task2/styles/style.css',
   '/task2/images/pixel.png',
   '/task2/js/app.js',
