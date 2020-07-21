@@ -3,11 +3,10 @@ const CACHE_NAME = 'task-1';
 
 const urlsToCache = [
 '/task2',
-'/task2/style.css',
 '/task2/scripts/app.js',
 '/task2/sw.js'
 ];
-
+var our_db;
 const serverImageParams = {
   'interaction': 'event',
   'client': 'customer',
@@ -26,8 +25,9 @@ self.addEventListener('install', event => {
       return cache.addAll(urlsToCache);
     }));
 });
-let our_db;
+
 openDatabase();
+
 self.addEventListener('activate', event => {
 
   const cacheWhitelist = ['task-1'];
@@ -47,6 +47,7 @@ self.addEventListener('activate', event => {
 function handleUrl(newUrl, isCacheResponseSend, event) {
   return event.waitUntil(fetch(newUrl).then(
     response => {
+
       // Check if we received a valid response
       if (response) {
         const responseToCache = response.clone();
@@ -56,29 +57,25 @@ function handleUrl(newUrl, isCacheResponseSend, event) {
           cache.put(newUrl, responseToCache);
         });
         if (!isCacheResponseSend) {
+          console.info("fetch request response from server" + response);
           return response;
         }
-        
-
+      
       }
-      // IMPORTANT: Clone the response. A response is a stream
-      // and because we want the browser to consume the response
-      // as well as the cache consuming the response, we need
-      // to clone it so we have two streams.
       
     }
   )
   .catch(err => {  
+    // saved the get request 
     saveGetRequests(newUrl);
-    console.error("inside 2 the error");
   }));
 }
 
 self.addEventListener('fetch', event => {
-  console.info(event.request);
+  console.info("fetch request " + event.request);
   let newUrl = event.request.url;
   if (newUrl.indexOf("giphy.gif")> -1) { 
-    const queryParam = newUrl.split("?");
+      const queryParam = newUrl.split("?");
       updatedParams = queryParam[1];
       for (const k of Object.entries(serverImageParams)) {
         updatedParams = updatedParams.replace(k[0], k[1]);
@@ -86,17 +83,18 @@ self.addEventListener('fetch', event => {
       newUrl = `${queryParam[0]}?${updatedParams}`;
       event.respondWith(caches.match(newUrl)
       .then(response => {
-        // Cache hit - return response
-        handleUrl(newUrl, response, event);
+        
+        handleUrl(event, newUrl, response);
         if (response) {
+          // Cache hit - return response
+          console.info("fetch request response from cache" + response);
           return response;
         }
       }, err => {
-        return handleUrl(newUrl, false, event);
-        console.error("error 2occured");
+        return handleUrl(event, newUrl, false);
       })
       .catch(err => {
-        console.error("error1  occured");
+        console.error(err);
       }));
   }
 
@@ -104,11 +102,12 @@ self.addEventListener('fetch', event => {
 
 const FOLDER_NAME = 'get_request';
 function openDatabase() {
-  // if `flask-form` does not already exist in our browser (under our site), it is created
+
+  // if `service-worker-data` does not already exist in our browser (under our site), it is created
   const indexedDBOpenRequest = indexedDB.open('service-worker-data');
 
   indexedDBOpenRequest.onerror = function(error) {
-    // errpr creatimg db
+    // error creating db
     console.error('IndexedDB error:', error)
   }
 
@@ -128,11 +127,10 @@ function openDatabase() {
 function saveGetRequests(url, payload) {
   const request = getObjectStore(FOLDER_NAME, 'readwrite').add({
     url: url,
-    payload: payload,
     method: 'GET'
   });
   request.onsuccess = function(event) {
-    console.log('a new pos_ request has been added to indexedb')
+    console.log('a new get request has been added to indexedb')
   }
 
   request.onerror = function(error) {
@@ -146,14 +144,15 @@ function getObjectStore(storeName, mode) {
 
 self.addEventListener('sync', event => {
   if (event.tag === 'sendGetRequest' && our_db) {
-  event.waitUntil(sendGetRequestToServer());
-    // Send our POST request to the server, now that the user is online
+     // Send our get requests to the server, now that the user is online
+    event.waitUntil(sendGetRequestToServer());
+   
   }
 });
 
 function sendGetRequestToServer() {
   const savedRequests = [];
-  const req = getObjectStore(FOLDER_NAME).openCursor(); // FOLDERNAME = 'post_requests'
+  const req = getObjectStore(FOLDER_NAME).openCursor(); // FOLDERNAME = 'get_requests'
 
   req.onsuccess = async function(event) {
     const cursor = event.target.result;
@@ -168,30 +167,21 @@ function sendGetRequestToServer() {
           // send them to the server one after the other
           console.log('saved request', savedRequest)
           const requestUrl = savedRequest.url;
-          const payload = JSON.stringify(savedRequest.payload);
-          const method = savedRequest.method;
-          const headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }; // if you have any other headers put them here
+
           fetch(requestUrl).then(response => {
             console.log('server response', response)
             if (response.status < 400) {
-              // If sending the POST request was successful, then remove it from the IndexedDB.
+              // If sending the get request was successful, then remove it from the IndexedDB.
               getObjectStore(FOLDER_NAME, 'readwrite').delete(savedRequest.id)
               const responseToCache = response.clone();
-
+              console.info('fetch request response after user is online', response)
               caches.open(CACHE_NAME)
                 .then(cache => {
                   cache.put(requestUrl, responseToCache);
                 });
             } 
           }).catch(error => {
-            // This will be triggered if the network is still down. The request will be replayed again
-            // the next time the service worker starts up.
             console.error('Send to Server failed:', error)
-            // since we are in a catch, it is important an error is thrown,
-            // so the background sync knows to keep retrying sendto server
             throw error
           })
         }
