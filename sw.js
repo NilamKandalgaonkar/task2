@@ -1,5 +1,5 @@
-// A list of local resources we always want to be cached
-var CACHE_NAME = 'task-1';
+/ A list of local resources we always want to be cached
+const CACHE_NAME = 'task-1';
 
 const urlsToCache = [
 '/nilamkandalgaonkar.github.io',
@@ -9,7 +9,7 @@ const urlsToCache = [
 '/nilamkandalgaonkar.github.io/sw.js'
 ];
 
-var serverImageParams = {
+const serverImageParams = {
   'interaction': 'event',
   'client': 'customer',
   'os_name': 'operating_system_name', 
@@ -19,45 +19,41 @@ var serverImageParams = {
   'landing_url': 'campaign_url'
 };
 
-self.addEventListener('install', function(event) {
+self.addEventListener('install', event => {
   // Perform install steps
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(function(cache) {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-  );
+  event.waitUntil(caches.open(CACHE_NAME)
+    .then(cache => {
+      console.log('Opened cache');
+      return cache.addAll(urlsToCache);
+    }));
 });
-var our_db;
+let our_db;
 openDatabase();
-self.addEventListener('activate', function(event) {
+self.addEventListener('activate', event => {
 
-  var cacheWhitelist = ['task-1'];
+  const cacheWhitelist = ['task-1'];
 
-  event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.map(function(cacheName) {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+  event.waitUntil(caches.keys().then(cacheNames => {
+    return Promise.all(
+      cacheNames.map(cacheName => {
+        if (cacheWhitelist.indexOf(cacheName) === -1) {
+          return caches.delete(cacheName);
+        }
+      })
+    );
+  }));
 });
 
 
-function handleUrl (newUrl, isCacheResponseSend) {
+function handleUrl(newUrl, isCacheResponseSend) {
   event.waitUntil(fetch(newUrl).then(
-    function(response) {
+    response => {
       // Check if we received a valid response
       if (response) {
-        var responseToCache = response.clone();
+        const responseToCache = response.clone();
 
       caches.open(CACHE_NAME)
-        .then(function(cache) {
+        .then(cache => {
           cache.put(newUrl, responseToCache);
         });
       
@@ -79,76 +75,74 @@ function handleUrl (newUrl, isCacheResponseSend) {
   }));
 }
 
-self.addEventListener('fetch', function(event) {
+self.addEventListener('fetch', event => {
   console.info(event.request);
-  var newUrl = event.request.url;
+  let newUrl = event.request.url;
   if (newUrl.indexOf("giphy.gif")> -1) { 
-    let queryParam = newUrl.split("?");
+    const queryParam = newUrl.split("?");
       updatedParams = queryParam[1];
-      for (let k of Object.entries(serverImageParams)) {
+      for (const k of Object.entries(serverImageParams)) {
         updatedParams = updatedParams.replace(k[0], k[1]);
       }
-      newUrl = queryParam[0] + "?" + updatedParams;
+      newUrl = `${queryParam[0]}?${updatedParams}`;
   }
-  event.respondWith(
-    caches.match(newUrl)
-      .then(function(response) {
-        // Cache hit - return response
-        if (response) {
-          handleUrl(newUrl, false)
-          return response;
+  event.respondWith(caches.match(newUrl)
+    .then(response => {
+      // Cache hit - return response
+      if (response) {
+        handleUrl(newUrl, false)
+        return response;
 
-        } 
-        
-      }).catch(err => {
-        handleUrl(newUrl, true)
-      })
-    );
+      } 
+      
+    }).catch(err => {
+      handleUrl(newUrl, true)
+    }));
 });
 
-var FOLDER_NAME = 'get_request';
-function openDatabase () {
+const FOLDER_NAME = 'get_request';
+function openDatabase() {
   // if `flask-form` does not already exist in our browser (under our site), it is created
-  var indexedDBOpenRequest = indexedDB.open('service-worker-data')
+  const indexedDBOpenRequest = indexedDB.open('service-worker-data');
 
-  indexedDBOpenRequest.onerror = function (error) {
+  indexedDBOpenRequest.onerror = function(error) {
     // errpr creatimg db
     console.error('IndexedDB error:', error)
   }
 
   
-  indexedDBOpenRequest.onupgradeneeded = function () {
+  indexedDBOpenRequest.onupgradeneeded = function() {
     // This should only execute if there's a need to create/update db.
     this.result.createObjectStore(FOLDER_NAME, { autoIncrement: true, keyPath: 'id' })
   }
 
   // This will execute each time the database is opened.
-  indexedDBOpenRequest.onsuccess = function () {
+  indexedDBOpenRequest.onsuccess = function() {
     our_db = this.result
     console.error('IndexedDB success');
   }
 }
 
-function saveGetRequests (url, payload) {
-  var request = getObjectStore(FOLDER_NAME, 'readwrite').add({
+function saveGetRequests(url, payload) {
+  const request = getObjectStore(FOLDER_NAME, 'readwrite').add({
     url: url,
     payload: payload,
     method: 'GET'
-  })
-  request.onsuccess = function (event) {
+  });
+  request.onsuccess = function(event) {
     console.log('a new pos_ request has been added to indexedb')
   }
 
-  request.onerror = function (error) {
+  request.onerror = function(error) {
     console.error(error)
   }
 }
 
-function getObjectStore (storeName, mode) {
+function getObjectStore(storeName, mode) {
   return our_db.transaction(storeName, mode).objectStore(storeName)
 }
 
-self.addEventListener('sync', function(event) {
+self.addEventListener('sync', event => {
   if (event.tag === 'sendGetRequest' && our_db) {
   event.waitUntil(sendGetRequestToServer());
     // Send our POST request to the server, now that the user is online
@@ -156,11 +150,11 @@ self.addEventListener('sync', function(event) {
 });
 
 function sendGetRequestToServer() {
-  var savedRequests = []
-  var req = getObjectStore(FOLDER_NAME).openCursor() // FOLDERNAME = 'post_requests'
+  const savedRequests = [];
+  const req = getObjectStore(FOLDER_NAME).openCursor(); // FOLDERNAME = 'post_requests'
 
-  req.onsuccess = async function (event) {
-    var cursor = event.target.result
+  req.onsuccess = async function(event) {
+    const cursor = event.target.result;
 
     if (cursor) {
       // Keep moving the cursor forward and collecting saved requests.
@@ -168,29 +162,29 @@ function sendGetRequestToServer() {
       cursor.continue()
     } else {
       // At this point, we have collected all the post requests in indexedb.
-        for (let savedRequest of savedRequests) {
+        for (const savedRequest of savedRequests) {
           // send them to the server one after the other
           console.log('saved request', savedRequest)
-          var requestUrl = savedRequest.url
-          var payload = JSON.stringify(savedRequest.payload)
-          var method = savedRequest.method
-          var headers = {
+          const requestUrl = savedRequest.url;
+          const payload = JSON.stringify(savedRequest.payload);
+          const method = savedRequest.method;
+          const headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
-          } // if you have any other headers put them here
-          fetch(requestUrl).then(function (response) {
+          }; // if you have any other headers put them here
+          fetch(requestUrl).then(response => {
             console.log('server response', response)
             if (response.status < 400) {
               // If sending the POST request was successful, then remove it from the IndexedDB.
               getObjectStore(FOLDER_NAME, 'readwrite').delete(savedRequest.id)
-              var responseToCache = response.clone();
+              const responseToCache = response.clone();
 
               caches.open(CACHE_NAME)
-                .then(function(cache) {
+                .then(cache => {
                   cache.put(requestUrl, responseToCache);
                 });
             } 
-          }).catch(function (error) {
+          }).catch(error => {
             // This will be triggered if the network is still down. The request will be replayed again
             // the next time the service worker starts up.
             console.error('Send to Server failed:', error)

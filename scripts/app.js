@@ -1,23 +1,23 @@
 //register service worker
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-     navigator.serviceWorker.register('sw.js').then(function(registration) {
+  window.addEventListener('load', () => {
+     navigator.serviceWorker.register('sw.js').then(registration => {
        // Registration was successful
        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-     }, function(err) {
+     }, err => {
        // registration failed :(
        console.log('ServiceWorker registration failed: ', err);
      });
 
-      window.addEventListener('online', function() {
+      window.addEventListener('online', () => {
       // when came online after network failure
        console.log('able to establish network ');
-      navigator.serviceWorker.ready.then(function(registration) {
+      navigator.serviceWorker.ready.then(registration => {
             return registration.sync.register('sendGetRequest')
-          }).then(function () {
+          }).then(() => {
           console.log('sync event registered')
-          }).catch(function() {
+          }).catch(() => {
           // system was unable to register for a sync,
           // this could be an OS-level restriction
           console.log('sync registration failed')
@@ -27,9 +27,9 @@ if ('serviceWorker' in navigator) {
    });
  }
 
- function _getUrl(event){
-  var url = "https://media1.giphy.com/media/Xf6mBnY3NiZv0GVxTG/giphy.gif?";
-  var params= {
+ function _getUrl(event) {
+  let url = "https://media1.giphy.com/media/Xf6mBnY3NiZv0GVxTG/giphy.gif?";
+  const params= {
           "interaction": event.type,
           "client": "ad_media",
           "os_name": _getOsName(),
@@ -40,22 +40,21 @@ if ('serviceWorker' in navigator) {
       };
 
 
-  let keys = Object.keys(params)
+  const keys = Object.keys(params);
 
   keys.map((elem, index) => 
-      url  += index === keys.length - 1 ? `${elem}=${params[elem]}`:`${elem}=${params[elem]}&`
-  )
+      url  += index === keys.length - 1 ? `${elem}=${params[elem]}`:`${elem}=${params[elem]}&`)
 
   return url;
 }
 
 function _getOsName() {  
-  var osName="Unknown OS";
+  let osName="Unknown OS";
 
-  if (navigator.appVersion.indexOf("Win")!=-1) osName="Windows"; 
-  else if (navigator.appVersion.indexOf("Mac")!=-1) osName="MacOS"; 
-  else if (navigator.appVersion.indexOf("X11")!=-1) osName="UNIX"; 
-  else if (navigator.appVersion.indexOf("Linux")!=-1) osName="Linux";
+  if (navigator.appVersion.indexOf("Win")!=-1) osName = "Windows"; 
+  else if (navigator.appVersion.indexOf("Mac")!=-1) osName = "MacOS"; 
+  else if (navigator.appVersion.indexOf("X11")!=-1) osName = "UNIX"; 
+  else if (navigator.appVersion.indexOf("Linux")!=-1) osName = "Linux";
     
   return osName;
 }
@@ -68,5 +67,3 @@ function loadImage(event) {
 function logError(error) {
     console.log('something went wrong: \n', error);
 }
-
-
