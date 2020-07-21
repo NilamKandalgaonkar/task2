@@ -44,8 +44,8 @@ self.addEventListener('activate', event => {
 });
 
 
-function handleUrl(newUrl, isCacheResponseSend) {
-  event.waitUntil(fetch(newUrl).then(
+function handleUrl(newUrl, isCacheResponseSend, event) {
+  return event.waitUntil(fetch(newUrl).then(
     response => {
       // Check if we received a valid response
       if (response) {
@@ -55,10 +55,10 @@ function handleUrl(newUrl, isCacheResponseSend) {
         .then(cache => {
           cache.put(newUrl, responseToCache);
         });
-      
-        if (isCacheResponseSend) {
+        if (!isCacheResponseSend) {
           return response;
         }
+        
 
       }
       // IMPORTANT: Clone the response. A response is a stream
@@ -84,19 +84,22 @@ self.addEventListener('fetch', event => {
         updatedParams = updatedParams.replace(k[0], k[1]);
       }
       newUrl = `${queryParam[0]}?${updatedParams}`;
+      event.respondWith(caches.match(newUrl)
+      .then(response => {
+        // Cache hit - return response
+        handleUrl(newUrl, response, event);
+        if (response) {
+          return response;
+        }
+      }, err => {
+        return handleUrl(newUrl, false, event);
+        console.error("error 2occured");
+      })
+      .catch(err => {
+        console.error("error1  occured");
+      }));
   }
-  event.respondWith(caches.match(newUrl)
-    .then(response => {
-      // Cache hit - return response
-      if (response) {
-        handleUrl(newUrl, false)
-        return response;
 
-      } 
-      
-    }).catch(err => {
-      handleUrl(newUrl, true)
-    }));
 });
 
 const FOLDER_NAME = 'get_request';
