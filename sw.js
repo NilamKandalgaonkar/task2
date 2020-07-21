@@ -44,7 +44,7 @@ self.addEventListener('activate', event => {
 });
 
 
-function handleUrl(newUrl, isCacheResponseSend, event) {
+function handleUrl(event, newUrl, isCacheResponseSend) {
   return event.waitUntil(fetch(newUrl).then(
     response => {
 
