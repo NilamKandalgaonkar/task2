@@ -29,7 +29,7 @@ if ('serviceWorker' in navigator) {
  function _getUrl(event){
   var path = 'images/'
   var imageName = "image.jpeg";
-  var url = "https://i.pinimg.com/originals/e4/97/e9/e497e9cfa0c8d4c0bfd78c2c508c6f09.gif?";
+  var url = "https://media1.giphy.com/media/Xf6mBnY3NiZv0GVxTG/giphy.gif?";
   var imageParams = {
       "name": "image.jpeg",
       "params": {
