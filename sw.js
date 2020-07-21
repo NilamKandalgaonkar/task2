@@ -4,8 +4,8 @@ const CACHE_NAME = 'task-1';
 const urlsToCache = [
 '/',
 '/task2',
-'/style.css',
-'/scripts/app.js',
+'/task2/style./task2css',
+'/task2/scripts/app.js',
 '/task2/sw.js'
 ];
 
