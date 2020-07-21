@@ -1,4 +1,4 @@
-/ A list of local resources we always want to be cached
+// A list of local resources we always want to be cached
 const CACHE_NAME = 'task-1';
 
 const urlsToCache = [
