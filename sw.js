@@ -2,10 +2,11 @@
 var CACHE_NAME = 'task-1';
 
 const urlsToCache = [
-'/',
-'/style.css',
-'/scripts/app.js',
-'/sw.js'
+'/nilamkandalgaonkar.github.io',
+'/nilamkandalgaonkar.github.io/',
+'/nilamkandalgaonkar.github.io/style.css',
+'/nilamkandalgaonkar.github.io/scripts/app.js',
+'/nilamkandalgaonkar.github.io/sw.js'
 ];
 
 var serverImageParams = {
