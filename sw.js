@@ -7,7 +7,6 @@ var CACHE_NAME = 'task-1';
 const urlsToCache = [
 '/',
 '/style.css',
-'/images/image.jpeg',
 '/scripts/app.js',
 '/sw.js'
 ];
