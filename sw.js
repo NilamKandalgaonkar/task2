@@ -1,7 +1,4 @@
 // A list of local resources we always want to be cached
-const PRECACHE = 'v1';
-const RUNTIME = 'runtime';
-
 var CACHE_NAME = 'task-1';
 
 const urlsToCache = [
@@ -50,40 +47,41 @@ self.addEventListener('activate', function(event) {
   );
 });
 
-/*self.addEventListener('fetch', function(event) {
-  console.info(event.request);
-  var newUrl = event.request.url;
-  if (newUrl.indexOf("image.jpeg")> -1) { 
-    let queryParam = newUrl.split("?");
-      updatedParams = queryParam[1];
-      for (let k of Object.entries(serverImageParams)) {
-        updatedParams = updatedParams.replace(k[0], k[1]);
-      }
-      newUrl = queryParam[0] + "?" + updatedParams;
-  }
-  console.log("url is " + newUrl);
-  event.respondWith(
-    caches.match(newUrl).then(function(response) {
-      if (response !== undefined) {
-        return response;
-      } else {
-        fetch(newUrl)
-        .then(response => {
+
+function handleUrl (newUrl, isCacheResponseSend) {
+  event.waitUntil(fetch(newUrl).then(
+    function(response) {
+      // Check if we received a valid response
+      if (response) {
+        var responseToCache = response.clone();
+
+      caches.open(CACHE_NAME)
+        .then(function(cache) {
+          cache.put(newUrl, responseToCache);
+        });
+      
+        if (isCacheResponseSend) {
           return response;
-        })
-        .catch(err => {  
-          saveGetRequests(event.request.clone().url);
-          console.error("inside 2 the error");
-        })
+        }
+
       }
-    })
-    );
-});*/
+      // IMPORTANT: Clone the response. A response is a stream
+      // and because we want the browser to consume the response
+      // as well as the cache consuming the response, we need
+      // to clone it so we have two streams.
+      
+    }
+  )
+  .catch(err => {  
+    saveGetRequests(newUrl);
+    console.error("inside 2 the error");
+  }));
+}
 
 self.addEventListener('fetch', function(event) {
   console.info(event.request);
   var newUrl = event.request.url;
-  if (newUrl.indexOf("image.jpeg")> -1) { 
+  if (newUrl.indexOf("giphy.gif")> -1) { 
     let queryParam = newUrl.split("?");
       updatedParams = queryParam[1];
       for (let k of Object.entries(serverImageParams)) {
@@ -95,34 +93,14 @@ self.addEventListener('fetch', function(event) {
     caches.match(newUrl)
       .then(function(response) {
         // Cache hit - return response
-        event.waitUntil(fetch(newUrl).then(
-          function(response) {
-            // Check if we received a valid response
-            if (response) {
-              var responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then(function(cache) {
-                cache.put(newUrl, responseToCache);
-              });
-
-            return response;
-            }
-            // IMPORTANT: Clone the response. A response is a stream
-            // and because we want the browser to consume the response
-            // as well as the cache consuming the response, we need
-            // to clone it so we have two streams.
-            
-          }
-        )
-        .catch(err => {  
-          saveGetRequests(newUrl);
-          console.error("inside 2 the error");
-        }));
         if (response) {
+          handleUrl(newUrl, false)
           return response;
+
         } 
         
+      }).catch(err => {
+        handleUrl(newUrl, true)
       })
     );
 });

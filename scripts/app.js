@@ -11,8 +11,9 @@ if ('serviceWorker' in navigator) {
      });
 
       window.addEventListener('online', function() {
-          navigator.serviceWorker.ready.then(function(registration) {
-            console.log('Service Worker Ready')
+      // when came online after network failure
+       console.log('able to establish network ');
+      navigator.serviceWorker.ready.then(function(registration) {
             return registration.sync.register('sendGetRequest')
           }).then(function () {
           console.log('sync event registered')
@@ -27,12 +28,8 @@ if ('serviceWorker' in navigator) {
  }
 
  function _getUrl(event){
-  var path = 'images/'
-  var imageName = "image.jpeg";
   var url = "https://media1.giphy.com/media/Xf6mBnY3NiZv0GVxTG/giphy.gif?";
-  var imageParams = {
-      "name": "image.jpeg",
-      "params": {
+  var params= {
           "interaction": event.type,
           "client": "ad_media",
           "os_name": _getOsName(),
@@ -40,13 +37,13 @@ if ('serviceWorker' in navigator) {
           "x2": "email",
           "x3": "pdfconvert",
           "landing_url": "abcd1"
-      }
-  }
+      };
 
-  let keys = Object.keys(imageParams.params)
+
+  let keys = Object.keys(params)
 
   keys.map((elem, index) => 
-      url  += index === keys.length - 1 ? `${elem}=${imageParams.params[elem]}`:`${elem}=${imageParams.params[elem]}&`
+      url  += index === keys.length - 1 ? `${elem}=${params[elem]}`:`${elem}=${params[elem]}&`
   )
 
   return url;
@@ -65,38 +62,11 @@ function _getOsName() {
 
 function loadImage(event) {
   fetch(_getUrl(event))
-  .then(validateResponse)
-  .then(readResponseAsBlob)
-  .then(displayImage)
   .catch(logError);
 }
   
-
-
-function readResponseAsBlob(response) {
-  return response.blob();
-}
-
-function displayImage(responseAsBlob) {
-  var container = document.getElementById('container');
-  var imgElem = document.createElement('img');
-  container.appendChild(imgElem);
-  var imgUrl = URL.createObjectURL(responseAsBlob);
-  imgElem.src = imgUrl;
-}
-
-function readResponseAsBlob(response) {
-  return response.blob();
-}
-
 function logError(error) {
     console.log('something went wrong: \n', error);
 }
 
-function validateResponse(response) {
-    if (!response.ok) {
-      throw Error(response.statusText);
-    }
-    return response;
-}
 
