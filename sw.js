@@ -44,7 +44,7 @@ self.addEventListener('activate', event => {
 });
 
 
-function handleUrl(newUrl, isCacheResponseSend) {
+function handleUrl(newUrl, isCacheResponseSend, event) {
   event.waitUntil(fetch(newUrl).then(
     response => {
       // Check if we received a valid response
@@ -89,13 +89,13 @@ self.addEventListener('fetch', event => {
     .then(response => {
       // Cache hit - return response
       if (response) {
-        handleUrl(newUrl, false)
+        handleUrl(newUrl, false, event)
         return response;
 
       } 
       
     }).catch(err => {
-      handleUrl(newUrl, true)
+      handleUrl(newUrl, true, event)
     }));
 });
 
